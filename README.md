@@ -9,9 +9,14 @@ Tested with DITA-OT 4.2.4 on Java 21. It should also work with other DITA-OT 4.x
 
 ## Install
 
+Get the ZIP from the [latest release](https://github.com/aireilly/com.redhat.openapi/releases/latest):
+
 ```
+curl -L -o openapi2dita.zip https://github.com/aireilly/com.redhat.openapi/releases/latest/download/openapi2dita.zip
 dita install openapi2dita.zip
 ```
+
+GitHub Actions publishes a release ZIP for each commit pushed to `main`. The ZIP contains the plugin files at its root, ready for `dita install`.
 
 ## Use
 
@@ -35,7 +40,11 @@ other map. You can also reference the generated map from your own map with a
 | `openapi.schemas` | `yes`, `no` | `yes` | Write a topic for each named schema |
 | `openapi.markdown` | `yes`, `no` | `yes` | Convert Markdown descriptions to DITA markup |
 
-Example: `dita --input=api.yaml --format=openapi2dita -o out --openapi.group-by=path`
+Use this to group APIs by path:
+
+```
+dita --input=api.yaml --format=openapi2dita -o out --openapi.group-by=path
+```
 
 ## Output
 

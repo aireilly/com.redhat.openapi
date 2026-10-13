@@ -1,0 +1,32 @@
+name: Publish main plugin ZIP
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v7
+
+      - name: Package DITA-OT plugin
+        run: zip -r "$RUNNER_TEMP/openapi2dita.zip" plugin.xml build_openapi2dita.xml lib xsl
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: main-${{ github.sha }}
+          name: Main ${{ github.sha }}
+          target_commitish: ${{ github.sha }}
+          body: Installable DITA-OT plugin ZIP from main at commit ${{ github.sha }}.
+          files: ${{ runner.temp }}/openapi2dita.zip
+          fail_on_unmatched_files: true
+          make_latest: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
