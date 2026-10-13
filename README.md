@@ -16,7 +16,7 @@ curl -L -o openapi2dita.zip https://github.com/aireilly/com.redhat.openapi/relea
 dita install openapi2dita.zip
 ```
 
-GitHub Actions publishes a release ZIP for each commit pushed to `main`. The ZIP contains the plugin files at its root, ready for `dita install`.
+Push a version tag, such as `0.0.1`, to publish the ZIP as a GitHub release. The ZIP is ready to install with `dita install`.
 
 ## Use
 

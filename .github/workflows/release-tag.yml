@@ -1,9 +1,10 @@
-name: Publish main plugin ZIP
+name: Publish tagged plugin ZIP
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '*.*.*'
+      - 'v*.*.*'
 
 permissions:
   contents: write
@@ -12,7 +13,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out main
+      - name: Check out tagged commit
         uses: actions/checkout@v7
 
       - name: Package DITA-OT plugin
@@ -21,10 +22,9 @@ jobs:
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: main-${{ github.sha }}
-          name: Main ${{ github.sha }}
-          target_commitish: ${{ github.sha }}
-          body: Installable DITA-OT plugin ZIP from main at commit ${{ github.sha }}.
+          tag_name: ${{ github.ref_name }}
+          name: OpenAPI2DITA ${{ github.ref_name }}
+          body: Installable DITA-OT plugin ZIP for version ${{ github.ref_name }}.
           files: ${{ runner.temp }}/openapi2dita.zip
           fail_on_unmatched_files: true
           make_latest: true
