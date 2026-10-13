@@ -417,14 +417,9 @@
     <xsl:result-document href="operations/{$id}.dita" format="reference">
       <reference id="{$id}" xml:lang="{$lang}">
         <title>{oa:op-title(.)}</title>
-        <xsl:choose>
-          <xsl:when test="oa:is-webhook(.)">
-            <shortdesc>Webhook <codeph>{$path}</codeph>: the API sends a <codeph>{$method}</codeph> request to your registered URL.</shortdesc>
-          </xsl:when>
-          <xsl:otherwise>
-            <shortdesc><codeph>{$method} {$path}</codeph></shortdesc>
-          </xsl:otherwise>
-        </xsl:choose>
+        <xsl:if test="oa:is-webhook(.)">
+          <shortdesc>Webhook <codeph>{$path}</codeph>: the API sends a <codeph>{$method}</codeph> request to your registered URL.</shortdesc>
+        </xsl:if>
         <prolog>
           <metadata>
             <xsl:if test="j:array[@key='tags']/j:string">
@@ -442,6 +437,7 @@
         <refbody>
           <xsl:if test="not(oa:is-webhook(.))">
             <refsyn>
+              <title><codeph>{$method} {$path}</codeph></title>
               <codeblock outputclass="language-http">{$method} {$server}{$path}</codeblock>
             </refsyn>
           </xsl:if>
