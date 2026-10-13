@@ -437,7 +437,7 @@
         <refbody>
           <xsl:if test="not(oa:is-webhook(.))">
             <refsyn>
-              <title><codeph>{$method} {$path}</codeph></title>
+              <title>{$method} {$path}</title>
               <codeblock outputclass="language-http">{$method} {$server}{$path}</codeblock>
             </refsyn>
           </xsl:if>
