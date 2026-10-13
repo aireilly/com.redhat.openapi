@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Pet Clinic API
+  version: "1.0"
+  description: Example of a specification split across several files.
+servers:
+  - url: https://clinic.example.com/api
+paths:
+  /pets:
+    get:
+      summary: List pets
+      operationId: listPets
+      tags: [Pets]
+      parameters:
+        - $ref: './common.yaml#/components/parameters/Limit'
+      responses:
+        '200':
+          description: The pets.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './schemas/Pet.yaml'
+        '404':
+          $ref: './responses/NotFound.yaml'
+  /pets/{id}:
+    get:
+      summary: Get a pet
+      operationId: getPet
+      tags: [Pets]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: The pet.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PetWithOwner'
+        default:
+          description: Error.
+          content:
+            application/json:
+              schema:
+                $ref: './common.yaml#/components/schemas/Error'
+components:
+  schemas:
+    PetWithOwner:
+      allOf:
+        - $ref: './schemas/Pet.yaml'
+        - type: object
+          properties:
+            owner: { type: string }

@@ -1,0 +1,5 @@
+description: Nothing was found.
+content:
+  application/json:
+    schema:
+      $ref: '../common.yaml#/components/schemas/Error'

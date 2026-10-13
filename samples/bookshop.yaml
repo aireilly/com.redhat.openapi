@@ -1,0 +1,369 @@
+openapi: 3.0.3
+info:
+  title: Bookshop API
+  version: "2.1.0"
+  description: |
+    The Bookshop API lets you manage a catalogue of **books** and the
+    `orders` placed for them.
+
+    Key features:
+
+    - Search the catalogue
+    - Place and track orders
+    - Receive [webhooks](https://example.com/docs/webhooks) when orders ship
+
+    | Limit | Value |
+    |-------|-------|
+    | Requests per minute | 600 |
+  contact:
+    name: API Support
+    email: api@example.com
+    url: https://example.com/support
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://{region}.api.example.com/v2
+    description: Production
+    variables:
+      region:
+        default: eu
+        enum: [eu, us]
+        description: Data residency region
+  - url: http://localhost:8080/v2
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Books
+    description: |
+      Everything about the catalogue. Books are identified by ISBN.
+  - name: Orders
+    description: Place and track orders.
+    externalDocs:
+      url: https://example.com/docs/orders
+      description: Ordering guide
+paths:
+  /books:
+    get:
+      tags: [Books]
+      summary: List books
+      description: Returns a paginated list of books. Results are sorted by title.
+      operationId: listBooks
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/PageSize'
+        - name: genre
+          in: query
+          description: Filter by genre.
+          schema:
+            $ref: '#/components/schemas/Genre'
+        - name: q
+          in: query
+          required: true
+          description: Free-text search over title and author.
+          schema:
+            type: string
+            minLength: 2
+            maxLength: 100
+          example: tolkien
+      responses:
+        '200':
+          description: A page of books.
+          headers:
+            X-Total-Count:
+              description: Total number of matching books.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Book'
+                  next:
+                    type: string
+                    format: uri
+                    nullable: true
+                    description: URL of the next page, or `null` on the last page.
+        '400':
+          $ref: '#/components/responses/BadRequest'
+    post:
+      tags: [Books]
+      summary: Add a book
+      operationId: createBook
+      security:
+        - bearerAuth: []
+        - oauth: [books:write]
+      requestBody:
+        $ref: '#/components/requestBodies/BookBody'
+      responses:
+        '201':
+          description: The book was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: A book with this ISBN already exists.
+  /books/{isbn}:
+    parameters:
+      - name: isbn
+        in: path
+        required: true
+        description: The book's ISBN-13.
+        schema:
+          type: string
+          pattern: '^97[89]\d{10}$'
+    get:
+      tags: [Books]
+      summary: Get a book
+      operationId: getBook
+      responses:
+        '200':
+          description: The book.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+              example:
+                isbn: "9780261103573"
+                title: The Fellowship of the Ring
+                author: J. R. R. Tolkien
+                genre: fantasy
+                price: 9.99
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Books]
+      summary: Remove a book
+      deprecated: true
+      responses:
+        '204':
+          description: Deleted.
+  /orders:
+    post:
+      tags: [Orders]
+      summary: Place an order
+      operationId: placeOrder
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewOrder'
+      responses:
+        '201':
+          description: Order accepted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        default:
+          $ref: '#/components/responses/Error'
+  /orders/{orderId}:
+    get:
+      tags: [Orders]
+      summary: Get an order
+      operationId: getOrder
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+      responses:
+        '200':
+          description: The order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+            application/xml:
+              schema:
+                $ref: '#/components/schemas/Order'
+  /health:
+    get:
+      summary: Health check
+      security: []
+      responses:
+        '200':
+          description: Service is healthy.
+          content:
+            text/plain:
+              schema:
+                type: string
+              example: OK
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Send a JWT from `/auth/token` in the `Authorization` header.
+    apiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    oauth:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://auth.example.com/token
+          scopes:
+            books:read: Read the catalogue
+            books:write: Change the catalogue
+  parameters:
+    PageSize:
+      name: limit
+      in: query
+      description: Maximum number of items to return.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+  requestBodies:
+    BookBody:
+      description: The book to add.
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/BookInput'
+  responses:
+    BadRequest:
+      description: The request was invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Error:
+      description: Unexpected error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    Genre:
+      type: string
+      description: Book genre.
+      enum: [fantasy, science-fiction, crime, non-fiction]
+    BookInput:
+      type: object
+      required: [isbn, title, author]
+      properties:
+        isbn:
+          type: string
+          description: ISBN-13.
+          example: "9780261103573"
+        title:
+          type: string
+          example: The Fellowship of the Ring
+        author:
+          type: string
+          example: J. R. R. Tolkien
+        genre:
+          $ref: '#/components/schemas/Genre'
+        price:
+          type: number
+          format: double
+          minimum: 0
+          example: 9.99
+        dimensions:
+          type: object
+          description: Physical dimensions in millimetres.
+          properties:
+            width:
+              type: integer
+            height:
+              type: integer
+    Book:
+      description: A book in the catalogue.
+      allOf:
+        - $ref: '#/components/schemas/BookInput'
+        - type: object
+          properties:
+            createdAt:
+              type: string
+              format: date-time
+              readOnly: true
+            stock:
+              type: integer
+              readOnly: true
+    NewOrder:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [isbn, quantity]
+            properties:
+              isbn:
+                type: string
+              quantity:
+                type: integer
+                minimum: 1
+                default: 1
+        delivery:
+          oneOf:
+            - $ref: '#/components/schemas/HomeDelivery'
+            - $ref: '#/components/schemas/StorePickup'
+    Order:
+      allOf:
+        - $ref: '#/components/schemas/NewOrder'
+        - type: object
+          properties:
+            id:
+              type: integer
+              format: int64
+            status:
+              type: string
+              enum: [pending, paid, shipped, cancelled]
+            total:
+              type: number
+    HomeDelivery:
+      type: object
+      properties:
+        address:
+          type: string
+    StorePickup:
+      type: object
+      properties:
+        storeId:
+          type: string
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties:
+            type: string

@@ -1,0 +1,21 @@
+components:
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, default: 10 }
+      description: Page size.
+  schemas:
+    Error:
+      type: object
+      properties:
+        message: { type: string }
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      properties:
+        field: { type: string }
+        problem: { type: string }

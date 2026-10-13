@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  openapi2dita: generate a DITA map and DITA topics from an OpenAPI 3.x
+  or Swagger 2.0 description (YAML or JSON). Run it with the
+  openapi2dita transtype; see README.md.
+-->
+<plugin id="openapi2dita" version="1.0.0">
+  <require plugin="org.dita.base"/>
+
+  <transtype name="openapi2dita" desc="OpenAPI / Swagger to DITA map and topics">
+    <param name="openapi.group-by" desc="How operations are grouped in the map: by their first tag, by first path segment, or not at all." type="enum">
+      <val default="true">tag</val>
+      <val>path</val>
+      <val>none</val>
+    </param>
+    <param name="openapi.map-name" desc="File name (without extension) for the generated map. Defaults to the input file name." type="string"/>
+    <param name="openapi.lang" desc="Value for xml:lang on generated maps and topics. Defaults to en-US." type="string"/>
+    <param name="openapi.curl" desc="Add an example curl request to each operation topic." type="enum">
+      <val default="true">yes</val>
+      <val>no</val>
+    </param>
+    <param name="openapi.schemas" desc="Generate a topic for each named schema (data model)." type="enum">
+      <val default="true">yes</val>
+      <val>no</val>
+    </param>
+    <param name="openapi.markdown" desc="Convert Markdown in descriptions to DITA markup using the bundled org.lwdita parser." type="enum">
+      <val default="true">yes</val>
+      <val>no</val>
+    </param>
+  </transtype>
+
+  <feature extension="dita.conductor.lib.import" file="lib/openapi2dita.jar"/>
+  <feature extension="ant.import" file="build_openapi2dita.xml"/>
+</plugin>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="openapi2dita">
+
+  <target name="dita2openapi2dita" depends="build-init" description="OpenAPI / Swagger to DITA">
+    <property name="openapi.group-by" value="tag"/>
+    <property name="openapi.map-name" value=""/>
+    <property name="openapi.lang" value="en-US"/>
+    <property name="openapi.curl" value="yes"/>
+    <property name="openapi.schemas" value="yes"/>
+    <property name="openapi.markdown" value="yes"/>
+
+    <taskdef name="openapi2dita" classname="openapi2dita.OpenApiToDitaTask"/>
+    <openapi2dita src="${args.input}"
+                  destdir="${output.dir}"
+                  style="${dita.plugin.openapi2dita.dir}/xsl/openapi2dita.xsl"
+                  mapname="${openapi.map-name}"
+                  lang="${openapi.lang}"
+                  groupby="${openapi.group-by}"
+                  includecurl="${openapi.curl}"
+                  includeschemas="${openapi.schemas}"
+                  markdown="${openapi.markdown}"/>
+  </target>
+
+</project>
