@@ -58,7 +58,7 @@ schemas/<name>.dita      reference per named schema (components/schemas or defin
 
 Each operation topic has these parts:
 
-* The title (from `summary`) and a second-level heading with the HTTP method and path.
+* The title (from `summary`) and a bold endpoint line with the HTTP method and path.
 * A `refsyn` holding the full request line.
 * The description, authorization requirements, and a parameters table.
 * The request body: content types, a link to the schema, a property table for inline schemas, and an example.
